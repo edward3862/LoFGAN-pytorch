@@ -15,7 +15,7 @@ The official pytorch implementation of our paper LoFGAN: Fusing Local Representa
 - Pytorch 1.5
 
 ## Preparing Dataset
-Download the datasets and unzip them in `datasets` folder.
+Download the [datasets](https://drive.google.com/drive/folders/1nGIqXPEjyhZjIsgiP_-Rb5t6Ji8RdiCA?usp=sharing) and unzip them in `datasets` folder.
 
 ## Training
 ```shell
