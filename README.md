@@ -44,6 +44,18 @@ python main_metric.py --gpu 0 --dataset flower \
 --fake_dir test_for_fid
 ```
 
+## Citation
+If you use this code for your research, please cite our paper.
+
+    @inproceedings{gu2021lofgan,
+    title={LoFGAN: Fusing Local Representations for Few-Shot Image Generation},
+    author={Gu, Zheng and Li, Wenbin and Huo, Jing and Wang, Lei and Gao, Yang},
+    booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
+    pages={8463--8471},
+    year={2021}
+    }
+
+
 ## Acknowledgement
 Our code is designed based on [FUNIT](https://github.com/NVlabs/FUNIT).
 
