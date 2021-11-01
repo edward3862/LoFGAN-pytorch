@@ -155,7 +155,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.encoder = Encoder()
         self.decoder = Decoder()
-        self.fusion = CrossFusionModule(inplanes=128, rate=config['rate'])
+        self.fusion = LocalFusionModule(inplanes=128, rate=config['rate'])
 
     def forward(self, xs):
         b, k, C, H, W = xs.size()
@@ -243,9 +243,9 @@ class Decoder(nn.Module):
         return self.model(x)
 
 
-class CrossFusionModule(nn.Module):
+class LocalFusionModule(nn.Module):
     def __init__(self, inplanes, rate):
-        super(CrossFusionModule, self).__init__()
+        super(LocalFusionModule, self).__init__()
 
         self.W = nn.Sequential(
             nn.Conv2d(inplanes, inplanes, kernel_size=1, stride=1, bias=False),
@@ -258,10 +258,10 @@ class CrossFusionModule(nn.Module):
         base_similarity = similarity[:, index]
         ref_similarities = torch.cat([similarity[:, :index], similarity[:, (index + 1):]], dim=1)
 
-        b, n, c, h, w = refs.size()  # take (32, 2, 128, 8, 8) for example
+        # take ref:(32, 2, 128, 8, 8) for example
+        b, n, c, h, w = refs.size()
         refs = refs.view(b * n, c, h, w)
 
-        #  channel-wise normalization for each local position
         w_feat = feat.view(b, c, -1)
         w_feat = w_feat.permute(0, 2, 1).contiguous()
         w_feat = F.normalize(w_feat, dim=2)  # (32*64*128)
@@ -270,17 +270,16 @@ class CrossFusionModule(nn.Module):
         w_refs = w_refs.permute(0, 2, 1, 3).contiguous().view(b, c, -1)
         w_refs = F.normalize(w_refs, dim=1)  # (32*128*128)
 
-        # 随机寻找位置
+        # local selection
         rate = self.rate
-        num = int(rate * h * w)  # 0.2*8*8 -> 12
+        num = int(rate * h * w)
         feat_indices = torch.cat([torch.LongTensor(random.sample(range(h * w), num)).unsqueeze(0) for _ in range(b)],
                                  dim=0).cuda()  # B*num
 
-        # 从feat中取出这k个位置的local特征
         feat = feat.view(b, c, -1)  # (32*128*64)
         feat_select = batched_index_select(feat, dim=2, index=feat_indices)  # (32*128*12)
 
-        # 计算这k个local位置与每个ref上的位置的相似度
+        # local matching
         w_feat_select = batched_index_select(w_feat, dim=1, index=feat_indices)  # (32*12*128)
         w_feat_select = F.normalize(w_feat_select, dim=2)  # (32*12*128)
 
@@ -299,7 +298,7 @@ class CrossFusionModule(nn.Module):
         ref_indices = torch.cat([item.unsqueeze(1) for item in ref_indices], dim=1)  # (32*2*12)
         ref_selects = torch.cat([item.unsqueeze(1) for item in ref_selects], dim=1)  # (32*2*128*12)
 
-        # 将这k个local位置上的feature按similarity进行加权
+        # local replacement
         base_similarity = base_similarity.view(b, 1, 1)  # (32*1*1)
         ref_similarities = ref_similarities.view(b, 1, n)  # (32*1*2)
         feat_select = feat_select.view(b, 1, -1)  # (32*1*(128*12))
@@ -309,7 +308,6 @@ class CrossFusionModule(nn.Module):
                      + torch.matmul(ref_similarities, ref_selects)  # (32*1*(128*12))
         feat_fused = feat_fused.view(b, c, num)  # (32*128*12)
 
-        # 替换原位置上的feature
         feat = batched_scatter(feat, dim=2, index=feat_indices, src=feat_fused)
         feat = feat.view(b, c, h, w)  # (32*128*8*8)
 
