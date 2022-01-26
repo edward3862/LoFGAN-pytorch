@@ -18,7 +18,8 @@ def fid(real, fake, gpu):
     print('Calculating FID...')
     print('real dir: {}'.format(real))
     print('fake dir: {}'.format(fake))
-    command = 'python -m pytorch_fid {} {} --gpu {}'.format(real, fake, gpu)
+    command = 'python -m pytorch_fid {} {} --gpu {}'.format(real, fake, gpu)  # pytorch-fid 0.1.1
+    # command = 'python -m pytorch_fid {} {} --device cuda:{}'.format(real, fake, gpu)  # pytorch-fid 0.2.1
     # command = 'python -m pytorch_fid {} {}'.format(real, fake)
     os.system(command)
 
@@ -110,11 +111,22 @@ if __name__ == '__main__':
     data_for_gen = data[:, :num, :, :, :]
     data_for_fid = data[:, num:, :, :, :]
 
+    # if os.path.exists(real_dir):
+    #     for cls in tqdm(range(data_for_fid.shape[0]), desc='preparing real images'):
+    #         for i in range(data_for_fid.shape[1]):
+    #             idx = i
+    #             real_img = data_for_fid[cls, idx, :, :, :]
+    #             if args.dataset == 'vggface':
+    #                 real_img *= 255
+    #             real_img = Image.fromarray(np.uint8(real_img))
+    #             real_img.save(os.path.join(real_dir, '{}_{}.png'.format(cls, str(i).zfill(3))), 'png')
+
+    # in case real images are less than 128
     if os.path.exists(real_dir):
         for cls in tqdm(range(data_for_fid.shape[0]), desc='preparing real images'):
-            for i in range(data_for_fid.shape[1]):
-                idx = i
-                real_img = data_for_fid[cls, idx, :, :, :]
+            for i in range(128):
+                idx = np.random.choice(data_for_fid.shape[1], 1)
+                real_img = data_for_fid[cls, idx, :, :, :][0]
                 if args.dataset == 'vggface':
                     real_img *= 255
                 real_img = Image.fromarray(np.uint8(real_img))
