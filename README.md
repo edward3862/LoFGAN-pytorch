@@ -60,3 +60,6 @@ If you use this code for your research, please cite our paper.
 Our code is designed based on [FUNIT](https://github.com/NVlabs/FUNIT).
 
 The code for calculate FID is based on [pytorch-fid](https://github.com/mseitzer/pytorch-fid)
+
+## License
+This repository is under [MIT license](https://github.com/edward3862/LoFGAN-pytorch/blob/master/LICENSE).
