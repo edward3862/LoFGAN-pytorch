@@ -33,7 +33,7 @@ class FSGDataset(data.Dataset):
         else:
             self.data = data[num_for_seen:]
             num_cls = num_cls_total - num_for_seen
-        self.n_smaple = n_sample
+        self.n_sample = n_sample
         self.transform = transform
 
         self.n_class = self.data.shape[0]
@@ -48,7 +48,7 @@ class FSGDataset(data.Dataset):
     def __getitem__(self, item):
         np.random.seed(item)
         cls = np.random.choice(self.n_class, 1)
-        idx = np.random.choice(self.img_per_class, self.n_smaple, replace=False)
+        idx = np.random.choice(self.img_per_class, self.n_sample, replace=False)
         x = self.data[cls, idx, :, :, :]
         if self.transform is not None:
             x = torch.cat([self.transform(img).unsqueeze(0) for img in x], dim=0)
