@@ -17,6 +17,8 @@ The official pytorch implementation of our paper LoFGAN: Fusing Local Representa
 ## Preparing Dataset
 Download the [datasets](https://portland-my.sharepoint.com/:f:/g/personal/zhenggu4-c_my_cityu_edu_hk/ErQRAfnkT1xJqaTZwB7ZVWoBrAu86flhwQeuBoHMS-bfVA?e=gaaeAZ) and unzip them in `datasets` folder.
 
+Update: Try this [link](https://box.nju.edu.cn/d/27fe9433f56a481ebe70/) if the above dataset link is broken.
+
 ## Training
 ```shell
 python train.py --conf configs/flower_lofgan.yaml \
